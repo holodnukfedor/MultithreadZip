@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.IO.Compression;
 using System.IO;
 using System.Diagnostics;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThreadChooseAlg;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockHandler;
+using System.Security;
+using System.Security.Permissions;
 
 namespace ZipVeeamTest
 {
@@ -138,50 +134,109 @@ namespace ZipVeeamTest
 
         static void Main(string[] args)
         {
-            string sourceFileName = @"Star.Wars.Rebels.S04E16.rus.LostFilm.TV.avi";
-            string destinationFileName = @"Star.Wars.Rebels.S04E16.rus.LostFilm.TV.avi.gz";
+            if (args.Length != 3)
+            {
+                Console.WriteLine("В программу необходимо послать 3 аргумента по шаблону: compress/decompress [имя исходного файла] [имя результирующего файла]");
+                return;
+            }
+
+            string command = args[0].Trim().ToLower();
+            string sourceFileName = args[1].Trim();
+            string destinationFileName = args[2].Trim();
+            bool needZip;
+
+            if (command == "compress")
+            {
+                needZip = true;
+            }
+            else if (command == "decompress")
+            {
+                needZip = false;
+            }
+            else
+            {
+                Console.WriteLine("Первым аргументом введена неизвестная команда. ");
+                Console.WriteLine("В программу необходимо послать 3 аргумента по шаблону: compress/decompress [имя исходного файла] [имя результирующего файла].");
+                Console.WriteLine("программа принимает две команды compress (сжатие исходного файла) или decompress (распаковка исходного файла)");
+                return;
+            }
+
+            var sourceFileInfo = new FileInfo(sourceFileName);
+
+            if (!sourceFileInfo.Exists)
+            {
+                Console.WriteLine("Не существует исходного файла с заданным именем: {0}", sourceFileName);
+                return;
+            }
+
+            try
+            {
+                using (var testSourceFilePermission = sourceFileInfo.OpenRead())
+                {
+
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine("У вас нет прав для чтения исходного файла: {0}", sourceFileName);
+                Console.WriteLine("Обратитест к администратору компьютера за получением прав или используйте файл для которого у вас есть права на чтение");
+                return;
+            }
+
+            if (sourceFileName.Length == 0)
+            {
+                Console.WriteLine("Не имеет смысла производить какие либо операции над пустым входным файлом: {0}", sourceFileName);
+                return;
+            }
+
+            var destinationFileInfo = new FileInfo(destinationFileName);
+            if (destinationFileInfo.Exists)
+            {
+                Console.WriteLine("Существует файл с именем аналогичным имени выходного файла {0}, он будет перезаписан", destinationFileName);
+                Console.WriteLine("Вы уверены, что хотите продолжить? y - да, любой другой символ - нет");
+
+                string answer = Console.ReadLine();
+                if (answer.Trim().ToLower() != "y")
+                    return;
+            }
+
+            try
+            {
+                using (var testDestFilePermission = destinationFileInfo.OpenWrite())
+                {
+
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine("У вас нет прав для записи в выходной файл: {0}", destinationFileName);
+                Console.WriteLine("Обратитест к администратору компьютера за получением прав или используйте файл для которого у вас есть права на запись");
+                return;
+            }
 
             var processorUnitCount = Environment.ProcessorCount;
             var availiableMemory = Convert.ToInt64(new PerformanceCounter("Memory", "Available MBytes").NextValue() * BlockSize);
-
-            Stopwatch stopWatch = new Stopwatch();
             Console.WriteLine("Количество ядер процессора: " + processorUnitCount);
             Console.WriteLine("Количество свободной оперативной памяти (Б): " + availiableMemory);
+
+            Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            //DecompressWithLengthFirst(destinationFileName, sourceFileName);
-            //UnzipFile(destinationFileName, sourceFileName);
-            //Decompress(destinationFileName, sourceFileName);
+            try
+            {
+                if (needZip)
+                    GZipMultithreadProcessor.Zip(sourceFileName, destinationFileName);
+                else
+                    GZipMultithreadProcessor.UnZip(sourceFileName, destinationFileName);
 
-            //var dataBlockParallelProcessor =
-            //    new DataBlockParallelProcessor<MinLoadedChoose, SimpleBlocksReader<MinLoadedChoose>, BlocksWriterWithLength>(new GZipCompressHandler(), sourceFileName, destinationFileName, BlockSize);
-
-            var dataBlockParallelProcessor =
-              new DataBlockParallelProcessor(
-                  new SimpleBlocksReader(new MinLoadedThreadChooseAlg(), BlockSize),
-                  new GZipCompressProcessor(),
-                  new BlocksWriterWithLength(),
-                  sourceFileName,
-                  destinationFileName,
-                  BlockSize
-                  );
-
-            //var dataBlockParallelProcessor =
-            //   new DataBlockParallelProcessor(
-            //       new BlocksReaderWithLength(new MinLoadedThreadChooseAlg()),
-            //       new GZipDecompressProcessor(BlockSize),
-            //       new SimpleBlocksWriter(),
-            //       destinationFileName,
-            //       sourceFileName,
-            //       BlockSize
-            //       );
-
-            dataBlockParallelProcessor.StartProcessing();
-            dataBlockParallelProcessor.Wait();
-
-            stopWatch.Stop();
-            TimeSpan ts = stopWatch.Elapsed;
-            Console.WriteLine("Алгоритм отработал за {0} секунд", ts.TotalSeconds);
+                stopWatch.Stop();
+                TimeSpan ts = stopWatch.Elapsed;
+                Console.WriteLine("Алгоритм отработал за {0} секунд", ts.TotalSeconds);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка: {0}", ex.Message);
+            }
         }
     }
 }

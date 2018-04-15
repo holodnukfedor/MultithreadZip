@@ -118,6 +118,12 @@ namespace ZipVeeamTest
             if (blockWriter == null)
                 throw new ArgumentNullException("blockWriter");
 
+            if (String.IsNullOrEmpty(sourcePath.Trim()))
+                throw new ArgumentException("Путь к файлу для чтения не должен быть null или содержать только пробелы");
+
+            if (String.IsNullOrEmpty(destinationPath.Trim()))
+                throw new ArgumentException("Путь к файлу для записи не должен быть null или содержать только пробелы");
+
             _sourcePath = sourcePath;
             _destinationPath = destinationPath;
 

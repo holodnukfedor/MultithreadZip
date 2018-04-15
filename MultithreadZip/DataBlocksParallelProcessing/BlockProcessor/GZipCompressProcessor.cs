@@ -4,7 +4,7 @@ using ZipVeeamTest;
 using System.IO;
 using System.IO.Compression;
 
-namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockHandler
+namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockProcessor
 {
     public class GZipCompressProcessor : IBlockProcessor
     {
