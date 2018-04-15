@@ -1,0 +1,4 @@
+MultithreadZip/bin/Debug
+*.gz
+*.avi
+*.pdf

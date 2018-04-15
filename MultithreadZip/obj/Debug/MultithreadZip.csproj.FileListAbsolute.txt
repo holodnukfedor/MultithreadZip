@@ -1,0 +1,11 @@
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.exe.config
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.exe
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.pdb
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\obj\Debug\ZipVeeamTest.exe
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\obj\Debug\ZipVeeamTest.pdb
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\bin\Debug\ZipVeeamTest.exe.config
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\bin\Debug\ZipVeeamTest.exe
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\bin\Debug\ZipVeeamTest.pdb
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\obj\Debug\ZipVeeamTest.exe
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\obj\Debug\ZipVeeamTest.pdb
+C:\Users\Fedor\Documents\Visual Studio 2013\Projects\MultithreadZip\MultithreadZip\obj\Debug\MultithreadZip.csprojResolveAssemblyReference.cache

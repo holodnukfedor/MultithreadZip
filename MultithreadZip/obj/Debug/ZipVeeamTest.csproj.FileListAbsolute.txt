@@ -1,0 +1,6 @@
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.exe.config
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\obj\Debug\ZipVeeamTest.csprojResolveAssemblyReference.cache
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.exe
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\bin\Debug\ZipVeeamTest.pdb
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\obj\Debug\ZipVeeamTest.exe
+c:\users\fedor\documents\visual studio 2013\Projects\ZipVeeamTest\ZipVeeamTest\obj\Debug\ZipVeeamTest.pdb
