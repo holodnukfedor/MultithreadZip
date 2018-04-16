@@ -30,7 +30,7 @@ namespace ZipVeeamTest
 
             var dataBlockParallelProcessor =
               new DataBlockParallelProcessor(
-                  new SimpleBlocksReader(new MinLoadedThreadChooseAlg(), BlockSize),
+                  new SimpleBlocksReader(new MinLoadedThreadChooseAlg()),
                   new GZipCompressProcessor(),
                   new BlocksWriterWithLength(),
                   sourceFileName,

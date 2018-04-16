@@ -16,13 +16,16 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres
             return _buffer;
         }
 
-        public SimpleBlocksReader(IProcessingThreadChooseAlg processingThreadChooseAlg, int blockSize)
+        protected override void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
+        {
+            _buffer = new byte[blockSize];
+            base.ReadBlocks(filePath, processingThreadDataQueueList, blockSize, readEndEvent);
+        }
+
+        public SimpleBlocksReader(IProcessingThreadChooseAlg processingThreadChooseAlg)
             : base(processingThreadChooseAlg)
 	    {
-            if (blockSize <= 0)
-                throw new ArgumentException("Размер блока должен быть положительным");
-
-            _buffer = new byte[blockSize];
+           
 	    }
     }
 }
