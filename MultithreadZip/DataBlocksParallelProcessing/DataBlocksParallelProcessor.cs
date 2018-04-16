@@ -14,11 +14,9 @@ namespace ZipVeeamTest
 {
     public class DataBlockParallelProcessor
     {
-        private BlocksPreparedToWrite _blocksPreparedToWrite;
+        private ProcessedBlocksCollection _blocksPreparedToWrite;
 
-        private List<ProcessingThreadData> _processingThreadDataList = new List<ProcessingThreadData>();
-
-        private Hashtable _processedBlockHashtable = Hashtable.Synchronized(new Hashtable());
+        private List<ProcessingThreadDataQueue> _processingThreadDataQueueList = new List<ProcessingThreadDataQueue>();
 
         private List<Thread> _processThreadsList = new List<Thread>();
 
@@ -47,21 +45,14 @@ namespace ZipVeeamTest
         private void ProcessDataBlocksQueue(object threadIndexObject)
         {
             int threadIndex = (int)threadIndexObject;
-            ProcessingThreadData processThreadData = _processingThreadDataList[threadIndex];
+            ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadDataQueueList[threadIndex];
 
             while (true)
             {
-                if (processThreadData.SynchronizedQueue.Count == 0 && !_readEndEvent.IsEnded())
-                    processThreadData.WaitOne();
-
-                if (processThreadData.SynchronizedQueue.Count == 0 && _readEndEvent.IsEnded())
-                    break;
-
-                DataBlock readBlock = processThreadData.SynchronizedQueue.Dequeue() as DataBlock;
-                processThreadData.Reset();
+                DataBlock readBlock = processingThreadDataQueue.DequeueWait();
 
                 if (readBlock == null)
-                    throw new ArgumentException("в очереди находится объект не типа DataBlock");
+                    break;
 
                 ProcessDataBlock(readBlock);
             }
@@ -70,28 +61,25 @@ namespace ZipVeeamTest
             if (_countOfProcessingThread == 0)
             {
                 _endProcessingEvent.SetEndTask();
-                _blocksPreparedToWrite.Set();
+                _blocksPreparedToWrite.AwakeTheWaitings();
             }
         }
 
         private void ProcessDataBlock(DataBlock readBlock)
         {
             var buffer = _blockHandler.Process(readBlock);
-            _processedBlockHashtable.Add(readBlock.Number, buffer);
-
-            if (readBlock.Number == _blocksPreparedToWrite.AwaitedKey)
-                _blocksPreparedToWrite.Set();
+            _blocksPreparedToWrite.Add(readBlock.Number, buffer);
         }
 
         public void StartProcessing()
         {
-            var readParameters = new ReadBlocksParams(_sourcePath, _processingThreadDataList, BlockSize, _readEndEvent);
+            var readParameters = new ReadBlocksParams(_sourcePath, _processingThreadDataQueueList, BlockSize, _readEndEvent);
             _blocksReader.StartReadBlocks(readParameters);
 
             for (int i = 0; i < ProcessorsCount; ++i)
                 _processThreadsList[i].Start(i);
 
-            var writeParameters = new WriteBlocksParams(_destinationPath, _endProcessingEvent, _blocksPreparedToWrite, _writeEndEvent);
+            var writeParameters = new WriteBlocksParams(_destinationPath, _blocksPreparedToWrite, _writeEndEvent);
             _blocksWriter.StartWriteBlocks(writeParameters);
         }
 
@@ -138,11 +126,11 @@ namespace ZipVeeamTest
 
             for (int i = 0; i < ProcessorsCount; ++i)
             {
-                _processingThreadDataList.Add(new ProcessingThreadData());
+                _processingThreadDataQueueList.Add(new ProcessingThreadDataQueue(_readEndEvent));
                 _processThreadsList.Add(new Thread(ProcessDataBlocksQueue));
             }
 
-            _blocksPreparedToWrite = new BlocksPreparedToWrite(_processedBlockHashtable);
+            _blocksPreparedToWrite = new ProcessedBlocksCollection(_endProcessingEvent);
         }
     }
 }

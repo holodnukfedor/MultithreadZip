@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params;
 using System.Threading;
+using ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params;
 
 namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
 {
@@ -9,7 +9,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
     {
         private Thread _writeThread;
 
-        protected abstract void WriteBlocks(string filePath, EndTaskEvent processingEndEvent, BlocksPreparedToWrite blocksPreparedToWrite, EndTaskEvent endWriteEvent);
+        protected abstract void WriteBlocks(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent endWriteEvent);
 
         protected virtual void WriteBlocks(Object obj)
         {
@@ -18,7 +18,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
             if (parameters == null)
                 throw new ArgumentException("параметр функции должен быть типом WriteBlockParams");
 
-            WriteBlocks(parameters.FilePath, parameters.ProcessingEndEvent, parameters.BlockPreparedToWrite, parameters.WriteEndEvent);
+            WriteBlocks(parameters.FilePath, parameters.ProcessedBlocks, parameters.WriteEndEvent);
         }
 
         public void StartWriteBlocks(Object obj)

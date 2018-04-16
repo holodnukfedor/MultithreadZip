@@ -6,25 +6,17 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params
     {
         public readonly string FilePath;
 
-        public readonly EndTaskEvent ProcessingEndEvent;
-
-        public readonly BlocksPreparedToWrite BlockPreparedToWrite;
+        public readonly ProcessedBlocksCollection ProcessedBlocks;
 
         public readonly EndTaskEvent WriteEndEvent;
 
-        private void CheckCtorArguments(string filePath, EndTaskEvent processingTaskEndEvent, BlocksPreparedToWrite blocksPreparedToWrite, EndTaskEvent writeEndEvent)
+        private void CheckCtorArguments(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent writeEndEvent)
         {
             if (String.IsNullOrEmpty(filePath.Trim()))
                 throw new ArgumentException("Должен быть задан путь к файлу ");
 
-            if (processingTaskEndEvent == null)
-                throw new ArgumentNullException("processingTaskEndEvent");
-
-            if (blocksPreparedToWrite == null)
-                throw new ArgumentNullException("blocksPreparedToWrite");
-
-            if (blocksPreparedToWrite.AwaitedKey < 1)
-                throw new ArgumentException("Ожидаемый ключ сигнализатора должен быть более либо равен 1");
+            if (processedBlocks == null)
+                throw new ArgumentNullException("processedBlocks");
 
             if (writeEndEvent == null)
                 throw new ArgumentNullException("writeEndEvent");
@@ -33,12 +25,11 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params
                 throw new ArgumentException("Нельзя посылать событие окончании записи с флагом законченного задания");
         }
 
-        public WriteBlocksParams(string filePath, EndTaskEvent processingEndEvent, BlocksPreparedToWrite blocksPreparedToWrite, EndTaskEvent writeEndEvent)
+        public WriteBlocksParams(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent writeEndEvent)
         {
-            CheckCtorArguments(filePath, processingEndEvent, blocksPreparedToWrite, writeEndEvent);
+            CheckCtorArguments(filePath, processedBlocks, writeEndEvent);
             FilePath = filePath;
-            ProcessingEndEvent = processingEndEvent;
-            BlockPreparedToWrite = blocksPreparedToWrite;
+            ProcessedBlocks = processedBlocks;
             WriteEndEvent = writeEndEvent;
         }
     }

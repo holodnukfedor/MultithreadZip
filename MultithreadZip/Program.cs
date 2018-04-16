@@ -193,7 +193,7 @@ namespace ZipVeeamTest
             if (destinationFileInfo.Exists)
             {
                 Console.WriteLine("Существует файл с именем аналогичным имени выходного файла {0}, он будет перезаписан", destinationFileName);
-                Console.WriteLine("Вы уверены, что хотите продолжить? y - да, любой другой символ - нет");
+                Console.WriteLine("Вы уверены, что хотите продолжить? y - да, любой другой символ либо последовательность символов - нет");
 
                 string answer = Console.ReadLine();
                 if (answer.Trim().ToLower() != "y")

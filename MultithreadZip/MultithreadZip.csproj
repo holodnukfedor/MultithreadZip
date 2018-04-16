@@ -53,14 +53,14 @@
     <Compile Include="DataBlocksParallelProcessing\BlocksReaders\ProcessingThreadChooseAlg\MinLoadedThreadChooseAlg.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksReaders\ProcessingThreadChooseAlg\SequenceThreadChooseAlg.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksReaders\SimpleBlocksReader.cs" />
-    <Compile Include="DataBlocksParallelProcessing\BlocksPreparedToWrite.cs" />
+    <Compile Include="DataBlocksParallelProcessing\ProcessedBlocksCollection.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\BlocksWriterWithLengthOfBlock.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\Interfaces\BlockWriterAbstract.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\Interfaces\BlockWriterOutSyncAbstract.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\Params\WriteBlocksParams.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\SimpleBlocksWriter.cs" />
     <Compile Include="DataBlocksParallelProcessing\EndTaskEvent.cs" />
-    <Compile Include="DataBlocksParallelProcessing\ProcessingThreadData.cs" />
+    <Compile Include="DataBlocksParallelProcessing\ProcessingThreadDataQueue.cs" />
     <Compile Include="GZipMultithreadProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

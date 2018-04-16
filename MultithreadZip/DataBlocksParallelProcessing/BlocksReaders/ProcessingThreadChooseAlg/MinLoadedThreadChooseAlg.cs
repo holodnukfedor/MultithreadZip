@@ -6,17 +6,17 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThrea
 {
     public class MinLoadedThreadChooseAlg : IProcessingThreadChooseAlg
     {
-        public ProcessingThreadData ChooseThread(List<ProcessingThreadData> threadDataList)
+        public ProcessingThreadDataQueue ChooseThread(List<ProcessingThreadDataQueue> processingThreadDataQueueList)
         {
-            int minCountInQueueThreadIndex = 0;
+            int minCountInThreadQueueIndex = 0;
 
-            for (int i = 1; i < threadDataList.Count; ++i)
+            for (int i = 1; i < processingThreadDataQueueList.Count; ++i)
             {
-                if (threadDataList[i].SynchronizedQueue.Count < threadDataList[minCountInQueueThreadIndex].SynchronizedQueue.Count)
-                    minCountInQueueThreadIndex = i;
+                if (processingThreadDataQueueList[i].Count < processingThreadDataQueueList[minCountInThreadQueueIndex].Count)
+                    minCountInThreadQueueIndex = i;
             }
 
-            return threadDataList[minCountInQueueThreadIndex];
+            return processingThreadDataQueueList[minCountInThreadQueueIndex];
         }
     }
 }

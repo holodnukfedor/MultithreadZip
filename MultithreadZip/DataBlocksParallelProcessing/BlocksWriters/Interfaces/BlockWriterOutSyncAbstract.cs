@@ -8,7 +8,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
     {
         protected abstract void WriteBlock(FileStream fileStream, byte[] buffer, int countToWrite);
 
-        protected override void WriteBlocks(string filePath, EndTaskEvent processingTaskEndEvent, BlocksPreparedToWrite blocksPreparedToWrite, EndTaskEvent endWriteEvent)
+        protected override void WriteBlocks(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent endWriteEvent)
         {
             const int defaultBufferSize = 4096;
 
@@ -16,28 +16,12 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
             {
                 while (true)
                 {
-                    int awaitedKey = blocksPreparedToWrite.AwaitedKey;
-                   
-                    if (!blocksPreparedToWrite.ProcessedBlocksTable.ContainsKey(awaitedKey) && !processingTaskEndEvent.IsEnded())
-                        blocksPreparedToWrite.WaitOne(awaitedKey);
-
-                    if (!blocksPreparedToWrite.ProcessedBlocksTable.ContainsKey(awaitedKey) && processingTaskEndEvent.IsEnded())
-                        break;
-
-                    var buffer = blocksPreparedToWrite.ProcessedBlocksTable[awaitedKey] as byte[];
+                    var buffer = processedBlocks.GetWaitNextProcessedBlock();
 
                     if (buffer == null)
-                    {
-                        throw new Exception("В очереди должны быть массивы byte []");
-                    }
+                        break;
                         
-
-                    blocksPreparedToWrite.Reset();
-                    blocksPreparedToWrite.AwaitedKey = awaitedKey + 1;
-
-                    Console.WriteLine(awaitedKey);
                     WriteBlock(fileStream, buffer, buffer.Length);
-                    blocksPreparedToWrite.ProcessedBlocksTable.Remove(awaitedKey);
                 }
             }
 

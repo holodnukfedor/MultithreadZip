@@ -8,12 +8,12 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThrea
     {
         private int _chosenThreadIndex = -1;
 
-        public ProcessingThreadData ChooseThread(List<ProcessingThreadData> threadDataList)
+        public ProcessingThreadDataQueue ChooseThread(List<ProcessingThreadDataQueue> processingThreadDataQueueList)
         {
-            if (++_chosenThreadIndex == threadDataList.Count)
+            if (++_chosenThreadIndex == processingThreadDataQueueList.Count)
                 _chosenThreadIndex = 0;
 
-            return threadDataList[_chosenThreadIndex];
+            return processingThreadDataQueueList[_chosenThreadIndex];
         }
     }
 }

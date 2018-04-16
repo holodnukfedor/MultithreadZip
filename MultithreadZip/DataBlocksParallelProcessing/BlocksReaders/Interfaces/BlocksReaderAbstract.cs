@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Params;
 using System.Threading;
+using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Params;
 using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThreadChooseAlg.Interfaces;
 
 namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
@@ -12,7 +12,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
 
         protected IProcessingThreadChooseAlg _processingThreadChooseAlg;
 
-        protected abstract void ReadBlocks(string filePath, List<ProcessingThreadData> processingThreadDataList, int blockSize, EndTaskEvent endReadEvent);
+        protected abstract void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent endReadEvent);
 
         protected virtual void ReadBlocks(object obj)
         {
@@ -21,7 +21,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
             if (parameters == null)
                 throw new ArgumentException("параметр функции должен быть типом ReadBlocksParams");
 
-            ReadBlocks(parameters.FilePath, parameters.ProcessingThreadDataList, parameters.BlockSize, parameters.EndReadEvent);
+            ReadBlocks(parameters.FilePath, parameters.ProcessingThreadDataQueueList, parameters.BlockSize, parameters.EndReadEvent);
         }
 
         public void StartReadBlocks(Object obj)
