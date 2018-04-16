@@ -22,6 +22,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
                         break;
                         
                     WriteBlock(fileStream, buffer, buffer.Length);
+                    fileStream.Flush();
                 }
             }
 

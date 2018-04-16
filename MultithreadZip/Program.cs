@@ -132,6 +132,19 @@ namespace ZipVeeamTest
             }
         }
 
+        private const int _megabyteCoefficient = 1048576;
+
+        private static bool ContinueDialog()
+        {
+            Console.WriteLine("Вы уверены, что хотите продолжить? y - да, любой другой символ либо последовательность символов - нет");
+
+            string answer = Console.ReadLine();
+            if (answer.Trim().ToLower() == "y")
+                return true;
+
+            return false;
+        }
+
         static void Main(string[] args)
         {
             if (args.Length != 3)
@@ -193,10 +206,8 @@ namespace ZipVeeamTest
             if (destinationFileInfo.Exists)
             {
                 Console.WriteLine("Существует файл с именем аналогичным имени выходного файла {0}, он будет перезаписан", destinationFileName);
-                Console.WriteLine("Вы уверены, что хотите продолжить? y - да, любой другой символ либо последовательность символов - нет");
 
-                string answer = Console.ReadLine();
-                if (answer.Trim().ToLower() != "y")
+                if (!ContinueDialog())
                     return;
             }
 
@@ -212,6 +223,25 @@ namespace ZipVeeamTest
                 Console.WriteLine("У вас нет прав для записи в выходной файл: {0}", destinationFileName);
                 Console.WriteLine("Обратитест к администратору компьютера за получением прав или используйте файл для которого у вас есть права на запись");
                 return;
+            }
+
+            string destinationFileDriveName = Path.GetPathRoot(destinationFileInfo.FullName);
+            var destinatinoDriveInfo = new DriveInfo(destinationFileDriveName);
+
+            if (destinatinoDriveInfo.AvailableFreeSpace <= sourceFileInfo.Length * 1.5)
+            {
+                Console.WriteLine("Размер исходного файла {0} - {1} байт ({2} Мб)", sourceFileInfo.Name, sourceFileInfo.Length, sourceFileInfo.Length / _megabyteCoefficient);
+
+                Console.WriteLine("Размер свободного доступного пространства на указанном жестком диске {0} - {1} байт ({2} Мб)", destinationFileDriveName, destinatinoDriveInfo.AvailableFreeSpace, destinatinoDriveInfo.AvailableFreeSpace / _megabyteCoefficient);
+
+                Console.WriteLine("Размер свободного пространства на жестком диске менее чем в полтора раза меньше исходного файла есть вероятность, что не хватит места для выполнения операции. ");
+
+                Console.WriteLine("При компресии если файл уже имеет сжатую структуру, размер файла может увеличиться. Поскольку так работает GZipStream и он был обозначен в техническом задании.");
+
+                Console.WriteLine("А при декомпресии логично, что файл может увеличиться также.");
+
+                if (!ContinueDialog())
+                    return;
             }
 
             var processorUnitCount = Environment.ProcessorCount;
