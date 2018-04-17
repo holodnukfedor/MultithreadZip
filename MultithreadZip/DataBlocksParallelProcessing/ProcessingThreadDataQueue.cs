@@ -8,6 +8,8 @@ namespace ZipVeeamTest
     {
         private const int _waitCount = 4000;
 
+        private int _countLimit;
+
         private Object _locker = new Object();
 
         private EndTaskEvent _readEndEvent;
@@ -15,6 +17,8 @@ namespace ZipVeeamTest
         private ManualResetEvent _blockReadOrReadEndedEvent;
 
         private Queue _synchronizedQueue;
+
+        private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory;
 
         private void WaitOne()
         {
@@ -36,8 +40,19 @@ namespace ZipVeeamTest
             _blockReadOrReadEndedEvent.Set();
         }
 
+        public bool IsMaxSizeExceeded()
+        {
+            return _synchronizedQueue.Count > _countLimit;
+        }
+
         public void Enqueue(DataBlock dataBlock)
         {
+            while (IsMaxSizeExceeded() || _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed)
+            {
+                _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.Reset();
+                _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.WaitOne();
+            }
+                    
             lock (_locker)
             {
                 _synchronizedQueue.Enqueue(dataBlock);
@@ -60,6 +75,10 @@ namespace ZipVeeamTest
                 {
                     readBlock = _synchronizedQueue.Dequeue() as DataBlock;
                     _blockReadOrReadEndedEvent.Reset();
+
+                    if (_synchronizedQueue.Count == 0 && !_readEndEvent.IsEnded())
+                        _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.Set();
+                        
                 }
 
                 return readBlock;
@@ -73,14 +92,22 @@ namespace ZipVeeamTest
             get { return _synchronizedQueue.Count; }
         }
 
-        public ProcessingThreadDataQueue(EndTaskEvent readEndEvent)
+        public ProcessingThreadDataQueue(EndTaskEvent readEndEvent, int countLimit, LimiterReadingThreadByOperMemory limiterReadingThreadByOperMemory)
         {
             if (readEndEvent == null)
-                throw new ArgumentException("");
+                throw new ArgumentException("readEndEvent");
 
+            if (countLimit <= 0)
+                throw new ArgumentException("Предел размера коллекции должен быть положительным");
+
+            if (limiterReadingThreadByOperMemory == null)
+                throw new ArgumentNullException("limiterReadingThreadByOperMemory");
+
+            _limiterReadingThreadByOperMemory = limiterReadingThreadByOperMemory;
+            _countLimit = countLimit;
             _readEndEvent = readEndEvent;
             _blockReadOrReadEndedEvent = new ManualResetEvent(false);
-            _synchronizedQueue = Queue.Synchronized(new Queue());
+            _synchronizedQueue = Queue.Synchronized(new Queue(countLimit));
         }
     }
 }

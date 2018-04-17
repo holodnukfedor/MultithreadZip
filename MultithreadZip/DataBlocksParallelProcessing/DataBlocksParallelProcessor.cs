@@ -9,11 +9,16 @@ using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces;
 using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Params;
 using ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThreadChooseAlg.Interfaces;
 using ZipVeeamTest.DataBlocksParallelProcessing.BlockProcessor.Interfaces;
+using System.Diagnostics;
 
 namespace ZipVeeamTest
 {
     public class DataBlockParallelProcessor
     {
+        private const  int _operationMemoryReserveForOS = 209715200;
+
+        private const int _minimumSizeOfCollections = 5;
+
         private ProcessedBlocksCollection _blocksPreparedToWrite;
 
         private List<ProcessingThreadDataQueue> _processingThreadDataQueueList = new List<ProcessingThreadDataQueue>();
@@ -32,6 +37,8 @@ namespace ZipVeeamTest
 
         private BlockWriterAbstract _blocksWriter;
 
+        private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory = new LimiterReadingThreadByOperMemory();
+
         private string _sourcePath;
 
         private string _destinationPath;
@@ -41,6 +48,32 @@ namespace ZipVeeamTest
         public readonly int BlockSize;
 
         public readonly int ProcessorsCount;
+
+        private int GetDataBlockCollectionSize()
+        {
+            long collectionSize;
+            using (var peformanceCounter = new PerformanceCounter("Memory", "Available Bytes"))
+            {
+                var availiableMemory = Convert.ToInt64(peformanceCounter.NextValue()) - _operationMemoryReserveForOS;
+                collectionSize = availiableMemory / (ProcessorsCount + 1);
+            }
+
+            // Это значение можно было бы вычислять, оно нужно чтобы память выделялась непрырывно не было
+            // OutOfMemoryException и память не лезла в виртуальную, обращение к виртуальной памяти тормозит процессор и он
+            // не выполняет работу. В общем как правильно вычислить быстро не разобрался. При 50 в виртуальное память алгоритм не лезет
+            int limitOfContinuosMemory = 50;//(int.MaxValue / (BlockSize * 2 + sizeof(int)) - 10) / 2;
+
+            if (collectionSize > limitOfContinuosMemory)
+                collectionSize = limitOfContinuosMemory;
+
+            if (collectionSize < _minimumSizeOfCollections)
+            {
+                Console.WriteLine("Недостаточно оперативной физической памяти для выполнения процесса. Будет использована вирутальная, что скажется на производительности. Закройте остальные приложения для максимальной производительности");
+                collectionSize = 5;
+            }
+
+            return (int) collectionSize;
+        }
 
         private void ProcessDataBlocksQueue(object threadIndexObject)
         {
@@ -124,13 +157,15 @@ namespace ZipVeeamTest
             _blockHandler = blockProcessor;
             _blocksWriter = blockWriter;
 
+            int dataBlockCollectionsSize = GetDataBlockCollectionSize();
+
             for (int i = 0; i < ProcessorsCount; ++i)
             {
-                _processingThreadDataQueueList.Add(new ProcessingThreadDataQueue(_readEndEvent));
+                _processingThreadDataQueueList.Add(new ProcessingThreadDataQueue(_readEndEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory));
                 _processThreadsList.Add(new Thread(ProcessDataBlocksQueue));
             }
 
-            _blocksPreparedToWrite = new ProcessedBlocksCollection(_endProcessingEvent);
+            _blocksPreparedToWrite = new ProcessedBlocksCollection(_endProcessingEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory);
         }
     }
 }

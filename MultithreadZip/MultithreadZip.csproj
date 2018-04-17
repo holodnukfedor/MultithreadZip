@@ -79,6 +79,7 @@
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\SimpleBlocksWriter.cs" />
     <Compile Include="DataBlocksParallelProcessing\EndTaskEvent.cs" />
     <Compile Include="DataBlocksParallelProcessing\ProcessingThreadDataQueue.cs" />
+    <Compile Include="DataBlocksParallelProcessing\LimiterReadingThreadByOperMemory.cs" />
     <Compile Include="GZipMultithreadProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
