@@ -69,7 +69,7 @@ namespace ZipVeeamTest
             if (collectionSize < _minimumSizeOfCollections)
             {
                 Console.WriteLine("Недостаточно оперативной физической памяти для выполнения процесса. Будет использована вирутальная, что скажется на производительности. Закройте остальные приложения для максимальной производительности");
-                collectionSize = 5;
+                collectionSize = _minimumSizeOfCollections;
             }
 
             return (int) collectionSize;
