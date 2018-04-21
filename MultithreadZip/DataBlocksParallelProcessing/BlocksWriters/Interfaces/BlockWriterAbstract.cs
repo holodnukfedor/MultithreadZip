@@ -13,12 +13,20 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
 
         protected virtual void WriteBlocks(Object obj)
         {
-            var parameters = obj as WriteBlocksParams;
+            try
+            {
+                var parameters = obj as WriteBlocksParams;
 
-            if (parameters == null)
-                throw new ArgumentException("параметр функции должен быть типом WriteBlockParams");
+                if (parameters == null)
+                    throw new ArgumentException("параметр функции должен быть типом WriteBlockParams");
 
-            WriteBlocks(parameters.FilePath, parameters.ProcessedBlocks, parameters.WriteEndEvent);
+                WriteBlocks(parameters.FilePath, parameters.ProcessedBlocks, parameters.WriteEndEvent);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при записи: {0}. Программа завершается", ex.Message);
+                Environment.Exit(0);
+            }
         }
 
         public void StartWriteBlocks(Object obj)

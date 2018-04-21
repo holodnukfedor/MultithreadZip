@@ -16,12 +16,21 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
 
         protected virtual void ReadBlocks(object obj)
         {
-            var parameters = obj as ReadBlocksParams;
+            ReadBlocksParams parameters = null;
+            try
+            {
+                parameters = obj as ReadBlocksParams;
 
-            if (parameters == null)
-                throw new ArgumentException("параметр функции должен быть типом ReadBlocksParams");
-
-            ReadBlocks(parameters.FilePath, parameters.ProcessingThreadDataQueueList, parameters.BlockSize, parameters.EndReadEvent);
+                if (parameters == null)
+                    throw new ArgumentException("параметр функции должен быть типом ReadBlocksParams");
+           
+                ReadBlocks(parameters.FilePath, parameters.ProcessingThreadDataQueueList, parameters.BlockSize, parameters.EndReadEvent);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при чтении: {0}. Программа завершается", ex.Message);
+                Environment.Exit(0);
+            }
         }
 
         public void StartReadBlocks(Object obj)

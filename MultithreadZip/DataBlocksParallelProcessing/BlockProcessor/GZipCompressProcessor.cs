@@ -15,7 +15,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockProcessor
             {
                 using (var zipStream = new GZipStream(memoryStream, CompressionMode.Compress, false))
                 {
-                    zipStream.Write(readBlock.Block, 0, readBlock.Block.Length);
+                    zipStream.Write(readBlock.Block, 0, readBlock.Size);
                 }
 
                 buffer = memoryStream.ToArray();

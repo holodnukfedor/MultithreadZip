@@ -8,17 +8,21 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres
 {
     public class SimpleBlocksReader : BlocksReaderInSyncAbstract
     {
-        private byte[] _buffer;
+        private int _blockSize;
 
         protected override byte[] ReadBlock(FileStream filestream, out int readCount)
         {
-            readCount = filestream.Read(_buffer, 0, _buffer.Length);
-            return _buffer;
+            var buffer = new byte[_blockSize];
+            readCount = filestream.Read(buffer, 0, buffer.Length);
+            return buffer;
         }
 
         protected override void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
         {
-            _buffer = new byte[blockSize];
+            if (blockSize <= 0)
+                throw new ArgumentException("Размер блока должен быть больше 0");
+
+            _blockSize = blockSize;
             base.ReadBlocks(filePath, processingThreadDataQueueList, blockSize, readEndEvent);
         }
 

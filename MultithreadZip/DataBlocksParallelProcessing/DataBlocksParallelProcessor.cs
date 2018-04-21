@@ -77,24 +77,32 @@ namespace ZipVeeamTest
 
         private void ProcessDataBlocksQueue(object threadIndexObject)
         {
-            int threadIndex = (int)threadIndexObject;
-            ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadDataQueueList[threadIndex];
-
-            while (true)
+            try
             {
-                DataBlock readBlock = processingThreadDataQueue.DequeueWait();
+                int threadIndex = (int)threadIndexObject;
+                ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadDataQueueList[threadIndex];
 
-                if (readBlock == null)
-                    break;
+                while (true)
+                {
+                    DataBlock readBlock = processingThreadDataQueue.DequeueWait();
 
-                ProcessDataBlock(readBlock);
+                    if (readBlock == null)
+                        break;
+
+                    ProcessDataBlock(readBlock);
+                }
+
+                --_countOfProcessingThread;
+                if (_countOfProcessingThread == 0)
+                {
+                    _endProcessingEvent.SetEndTask();
+                    _blocksPreparedToWrite.AwakeTheWaitings();
+                }
             }
-
-            --_countOfProcessingThread;
-            if (_countOfProcessingThread == 0)
+            catch (Exception ex)
             {
-                _endProcessingEvent.SetEndTask();
-                _blocksPreparedToWrite.AwakeTheWaitings();
+                Console.WriteLine("Произошла ошибка при обработке: {0}. Программа завершается", ex.Message);
+                Environment.Exit(0);
             }
         }
 

@@ -29,9 +29,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
                     {
                         ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadChooseAlg.ChooseThread(processingThreadDataQueueList);
 
-                        byte[] bufferCopy = new byte[readCount];
-                        Array.Copy(buffer, bufferCopy, readCount);
-                        DataBlock readBlock = new DataBlock(bufferCopy, returnedReadBlockNumber++);
+                        DataBlock readBlock = new DataBlock(buffer, returnedReadBlockNumber++, readCount);
 
                         processingThreadDataQueue.Enqueue(readBlock);
                     }
