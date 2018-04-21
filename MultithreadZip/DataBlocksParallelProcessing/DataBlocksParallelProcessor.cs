@@ -19,9 +19,9 @@ namespace ZipVeeamTest
 
         private const int _minimumSizeOfCollections = 5;
 
-        private ProcessedBlocksCollection _blocksPreparedToWrite;
+        private ProcessedBlocksQueue _blocksPreparedToWrite;
 
-        private List<ProcessingThreadDataQueue> _processingThreadDataQueueList = new List<ProcessingThreadDataQueue>();
+        private List<ProcessingThreadBlocksQueue> _processingThreadDataQueueList = new List<ProcessingThreadBlocksQueue>();
 
         private List<Thread> _processThreadsList = new List<Thread>();
 
@@ -80,7 +80,7 @@ namespace ZipVeeamTest
             try
             {
                 int threadIndex = (int)threadIndexObject;
-                ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadDataQueueList[threadIndex];
+                ProcessingThreadBlocksQueue processingThreadDataQueue = _processingThreadDataQueueList[threadIndex];
 
                 while (true)
                 {
@@ -96,7 +96,7 @@ namespace ZipVeeamTest
                 if (_countOfProcessingThread == 0)
                 {
                     _endProcessingEvent.SetEndTask();
-                    _blocksPreparedToWrite.AwakeTheWaitings();
+                    _blocksPreparedToWrite.AwakeWaitingsForAddition();
                 }
             }
             catch (Exception ex)
@@ -109,7 +109,7 @@ namespace ZipVeeamTest
         private void ProcessDataBlock(DataBlock readBlock)
         {
             var buffer = _blockHandler.Process(readBlock);
-            _blocksPreparedToWrite.Add(readBlock.Number, buffer);
+            _blocksPreparedToWrite.Enqueue(new DataBlock(buffer, readBlock.Number, buffer.Length));
         }
 
         public void StartProcessing()
@@ -169,11 +169,11 @@ namespace ZipVeeamTest
 
             for (int i = 0; i < ProcessorsCount; ++i)
             {
-                _processingThreadDataQueueList.Add(new ProcessingThreadDataQueue(_readEndEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory));
+                _processingThreadDataQueueList.Add(new ProcessingThreadBlocksQueue(_readEndEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory));
                 _processThreadsList.Add(new Thread(ProcessDataBlocksQueue));
             }
 
-            _blocksPreparedToWrite = new ProcessedBlocksCollection(_endProcessingEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory);
+            _blocksPreparedToWrite = new ProcessedBlocksQueue(_endProcessingEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory);
         }
     }
 }

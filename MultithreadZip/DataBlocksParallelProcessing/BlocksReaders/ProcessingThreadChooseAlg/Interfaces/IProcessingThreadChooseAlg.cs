@@ -6,6 +6,6 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThrea
 {
     public interface IProcessingThreadChooseAlg
     {
-        ProcessingThreadDataQueue ChooseThread(List<ProcessingThreadDataQueue> processingThreadDataQueueList);
+        ProcessingThreadBlocksQueue ChooseThread(List<ProcessingThreadBlocksQueue> processingThreadDataQueueList);
     }
 }

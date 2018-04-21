@@ -12,7 +12,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
 
         protected IProcessingThreadChooseAlg _processingThreadChooseAlg;
 
-        protected abstract void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent endReadEvent);
+        protected abstract void ReadBlocks(string filePath, List<ProcessingThreadBlocksQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent endReadEvent);
 
         protected virtual void ReadBlocks(object obj)
         {

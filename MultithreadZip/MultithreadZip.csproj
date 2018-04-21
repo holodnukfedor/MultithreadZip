@@ -78,13 +78,14 @@
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\Params\WriteBlocksParams.cs" />
     <Compile Include="DataBlocksParallelProcessing\BlocksWriters\SimpleBlocksWriter.cs" />
     <Compile Include="DataBlocksParallelProcessing\EndTaskEvent.cs" />
-    <Compile Include="DataBlocksParallelProcessing\ProcessingThreadDataQueue.cs" />
+    <Compile Include="DataBlocksParallelProcessing\ProcessingThreadBlocksQueue.cs" />
     <Compile Include="DataBlocksParallelProcessing\LimiterReadingThreadByOperMemory.cs" />
     <Compile Include="GZipMultithreadProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataBlocksParallelProcessing\DataBlock.cs" />
     <Compile Include="DataBlocksParallelProcessing\DataBlocksParallelProcessor.cs" />
+    <Compile Include="SizeLimitedPriorityQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

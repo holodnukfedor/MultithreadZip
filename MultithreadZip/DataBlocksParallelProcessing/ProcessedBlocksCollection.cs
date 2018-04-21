@@ -1,44 +1,24 @@
 ﻿using System;
-using System.Threading;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ZipVeeamTest
 {
-    public class ProcessedBlocksCollection
+    public class ProcessedBlocksQueue : SizeLimitedPriorityQueue<byte []>
     {
-        private const int _waitCount = 4000;
-
-        private int _countLimit;
-
-        private Object _locker = new Object();
-
-        private EndTaskEvent _processingEndEvent;
-
-        private ManualResetEvent _blockProcessedOrProcessEndEvent;
-
         private Hashtable _processedBlocksTable;
 
         private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory;
 
         private int _awaitedKey;
 
-        private void WaitOne()
+        private int _lastAddedNumber;
+
+        protected override bool EndOfWaitingForAddition()
         {
-            int start = 0;
-            while (Thread.VolatileRead(ref start) < _waitCount)
-            {
-                if (_processedBlocksTable.ContainsKey(_awaitedKey) || _processingEndEvent.IsEnded())
-                    return;
-
-                Thread.VolatileWrite(ref start, start + 1);
-            }
-
-            _blockProcessedOrProcessEndEvent.WaitOne();
+            return _processedBlocksTable.ContainsKey(_awaitedKey);
         }
 
-        private void AwakeReadingThread()
+        protected override void AwakeAddingThread()
         {
             if (_processedBlocksTable.Count == 0)
             {
@@ -47,72 +27,39 @@ namespace ZipVeeamTest
             }
         }
 
-        public void AwakeTheWaitings()
+        protected override void BeforeEnqueue()
         {
-            _blockProcessedOrProcessEndEvent.Set();
+            _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed = true;
         }
 
-        public bool IsMaxSizeExceeded()
+        protected override void AddToCollection(DataBlock dataBlock)
         {
-            return _processedBlocksTable.Count > _countLimit;
+            _processedBlocksTable.Add(dataBlock.Number, dataBlock.Block);
+            _lastAddedNumber = dataBlock.Number;
         }
 
-        public void Add(int number, byte [] buffer)
+        protected override bool NeedAwakeWaitingsForAdding()
         {
-            if (IsMaxSizeExceeded())
-                _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed = true;
-
-            lock(_locker)
-            {
-                _processedBlocksTable.Add(number, buffer);
-                if (number == _awaitedKey)
-                    _blockProcessedOrProcessEndEvent.Set();
-            }
+            return _lastAddedNumber == _awaitedKey;
         }
 
-        public byte [] GetWaitNextProcessedBlock()
+        protected override byte [] DequeueFromCollection()
         {
-            if (!_processedBlocksTable.ContainsKey(_awaitedKey) && !_processingEndEvent.IsEnded())
-            {
-                AwakeReadingThread();
-                WaitOne();
-            }
-                
-            if (_processedBlocksTable.ContainsKey(_awaitedKey))
-            {
-                byte[] buffer;
+            Console.WriteLine(_awaitedKey);
+            var buffer = _processedBlocksTable[_awaitedKey] as byte[];
+            _processedBlocksTable.Remove(_awaitedKey);
+            ++_awaitedKey;
 
-                lock (_locker)
-                {
-                    Console.WriteLine(_awaitedKey);
-                    buffer = _processedBlocksTable[_awaitedKey] as byte[];
-                    _blockProcessedOrProcessEndEvent.Reset();
-                    _processedBlocksTable.Remove(_awaitedKey);
-                    ++_awaitedKey;
-                }
-
-                return buffer;
-            }
-
-            return null;
+            return buffer;
         }
 
-        public ProcessedBlocksCollection(EndTaskEvent processingEndEvent, int countLimit, LimiterReadingThreadByOperMemory limiterReadingThreadByOperMemory)
+        public ProcessedBlocksQueue(EndTaskEvent processingEndEvent, int countLimit, LimiterReadingThreadByOperMemory limiterReadingThreadByOperMemory) : base(processingEndEvent, countLimit, Hashtable.Synchronized(new Hashtable(countLimit)))
         {
-            if (processingEndEvent == null)
-                throw new ArgumentNullException("processingEndEvent");
-
-            if (countLimit <= 0)
-                throw new ArgumentException("лимит количества элементов в коллекции должен быть равен ");
-
             if (limiterReadingThreadByOperMemory == null)
                 throw new ArgumentNullException("limiterReadingThreadByOperMemory");
 
             _limiterReadingThreadByOperMemory = limiterReadingThreadByOperMemory;
-            _countLimit = countLimit;
-            _processingEndEvent = processingEndEvent;
-            _processedBlocksTable = Hashtable.Synchronized(new Hashtable(countLimit));
-            _blockProcessedOrProcessEndEvent = new ManualResetEvent(false);
+            _processedBlocksTable = _collection as Hashtable;
             _awaitedKey = 1;
         }
     }

@@ -8,7 +8,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
     {
         protected abstract void WriteBlock(FileStream fileStream, byte[] buffer, int countToWrite);
 
-        protected override void WriteBlocks(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent endWriteEvent)
+        protected override void WriteBlocks(string filePath, ProcessedBlocksQueue processedBlocks, EndTaskEvent endWriteEvent)
         {
             const int defaultBufferSize = 4096;
 
@@ -16,7 +16,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
             {
                 while (true)
                 {
-                    var buffer = processedBlocks.GetWaitNextProcessedBlock();
+                    var buffer = processedBlocks.DequeueWait();
 
                     if (buffer == null)
                         break;

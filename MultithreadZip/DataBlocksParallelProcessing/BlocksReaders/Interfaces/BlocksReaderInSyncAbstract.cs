@@ -10,7 +10,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
     {
         protected abstract byte[] ReadBlock(FileStream filestream, out int readCount);
 
-        protected override void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
+        protected override void ReadBlocks(string filePath, List<ProcessingThreadBlocksQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
         {
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None, blockSize, false))
             {
@@ -27,7 +27,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
 
                     if (readCount > 0)
                     {
-                        ProcessingThreadDataQueue processingThreadDataQueue = _processingThreadChooseAlg.ChooseThread(processingThreadDataQueueList);
+                        ProcessingThreadBlocksQueue processingThreadDataQueue = _processingThreadChooseAlg.ChooseThread(processingThreadDataQueueList);
 
                         DataBlock readBlock = new DataBlock(buffer, returnedReadBlockNumber++, readCount);
 
@@ -42,7 +42,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Interfaces
 
             readEndEvent.SetEndTask();
             foreach (var processingThreadData in processingThreadDataQueueList)
-                processingThreadData.AwakeTheWaitings();
+                processingThreadData.AwakeWaitingsForAddition();
         }
 
         public BlocksReaderInSyncAbstract(IProcessingThreadChooseAlg processingThreadChooseAlg)

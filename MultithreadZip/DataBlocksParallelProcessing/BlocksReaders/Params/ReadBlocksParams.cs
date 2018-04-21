@@ -9,13 +9,13 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Params
     {
         public readonly string FilePath;
 
-        public readonly List<ProcessingThreadDataQueue> ProcessingThreadDataQueueList;
+        public readonly List<ProcessingThreadBlocksQueue> ProcessingThreadDataQueueList;
 
         public readonly int BlockSize;
 
         public readonly EndTaskEvent EndReadEvent;
 
-        private void CheckCtorArguments(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent endReadEvent)
+        private void CheckCtorArguments(string filePath, List<ProcessingThreadBlocksQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent endReadEvent)
         {
             if (String.IsNullOrEmpty(filePath.Trim()))
                 throw new ArgumentException("должен быть задан путь к файлу");
@@ -36,7 +36,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.Params
                 throw new FileNotFoundException(String.Format("По указанному пути '{0}' не обнаружен файл", filePath));
         }
 
-        public ReadBlocksParams(string filePath, List<ProcessingThreadDataQueue> processingThreadDataList, int blockSize, EndTaskEvent endReadEvent)
+        public ReadBlocksParams(string filePath, List<ProcessingThreadBlocksQueue> processingThreadDataList, int blockSize, EndTaskEvent endReadEvent)
         {
             CheckCtorArguments(filePath, processingThreadDataList, blockSize, endReadEvent);
             FilePath = filePath;

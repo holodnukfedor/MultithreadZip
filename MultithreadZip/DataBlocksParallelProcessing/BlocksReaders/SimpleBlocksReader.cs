@@ -17,7 +17,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres
             return buffer;
         }
 
-        protected override void ReadBlocks(string filePath, List<ProcessingThreadDataQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
+        protected override void ReadBlocks(string filePath, List<ProcessingThreadBlocksQueue> processingThreadDataQueueList, int blockSize, EndTaskEvent readEndEvent)
         {
             if (blockSize <= 0)
                 throw new ArgumentException("Размер блока должен быть больше 0");

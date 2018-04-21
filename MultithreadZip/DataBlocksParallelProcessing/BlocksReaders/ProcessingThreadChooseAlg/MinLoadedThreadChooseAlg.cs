@@ -6,7 +6,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockReadres.ProcessingThrea
 {
     public class MinLoadedThreadChooseAlg : IProcessingThreadChooseAlg
     {
-        public ProcessingThreadDataQueue ChooseThread(List<ProcessingThreadDataQueue> processingThreadDataQueueList)
+        public ProcessingThreadBlocksQueue ChooseThread(List<ProcessingThreadBlocksQueue> processingThreadDataQueueList)
         {
             int minCountInThreadQueueIndex = 0;
 

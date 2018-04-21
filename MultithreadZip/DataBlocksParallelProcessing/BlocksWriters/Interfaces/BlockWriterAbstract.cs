@@ -9,7 +9,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Interfaces
     {
         private Thread _writeThread;
 
-        protected abstract void WriteBlocks(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent endWriteEvent);
+        protected abstract void WriteBlocks(string filePath, ProcessedBlocksQueue processedBlocks, EndTaskEvent endWriteEvent);
 
         protected virtual void WriteBlocks(Object obj)
         {

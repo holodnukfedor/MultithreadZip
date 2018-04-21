@@ -6,11 +6,11 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params
     {
         public readonly string FilePath;
 
-        public readonly ProcessedBlocksCollection ProcessedBlocks;
+        public readonly ProcessedBlocksQueue ProcessedBlocks;
 
         public readonly EndTaskEvent WriteEndEvent;
 
-        private void CheckCtorArguments(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent writeEndEvent)
+        private void CheckCtorArguments(string filePath, ProcessedBlocksQueue processedBlocks, EndTaskEvent writeEndEvent)
         {
             if (String.IsNullOrEmpty(filePath.Trim()))
                 throw new ArgumentException("Должен быть задан путь к файлу ");
@@ -25,7 +25,7 @@ namespace ZipVeeamTest.DataBlocksParallelProcessing.BlockWriters.Params
                 throw new ArgumentException("Нельзя посылать событие окончании записи с флагом законченного задания");
         }
 
-        public WriteBlocksParams(string filePath, ProcessedBlocksCollection processedBlocks, EndTaskEvent writeEndEvent)
+        public WriteBlocksParams(string filePath, ProcessedBlocksQueue processedBlocks, EndTaskEvent writeEndEvent)
         {
             CheckCtorArguments(filePath, processedBlocks, writeEndEvent);
             FilePath = filePath;
