@@ -4,24 +4,13 @@ using System.Threading;
 
 namespace ZipVeeamTest
 {
-    public class ProcessingThreadBlocksQueue : SizeLimitedPriorityQueue<DataBlock>
+    public class ProcessingThreadBlocksQueue : DataBlockPriorityQueueAbstract<DataBlock>
     {
         private Queue _synchronizedQueue;
-
-        private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory;
 
         protected override bool EndOfWaitingForAddition()
         {
             return _synchronizedQueue.Count > 0;
-        }
-
-        protected override void BeforeEnqueue()
-        {
-            while (IsMaxSizeExceeded() || _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed)
-            {
-                _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.Reset();
-                _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.WaitOne();
-            }
         }
 
         protected override void AddToCollection(DataBlock dataBlock)
@@ -39,18 +28,14 @@ namespace ZipVeeamTest
             return _synchronizedQueue.Count == 1;
         }
 
-        protected override void AwakeAddingThread()
+        public ProcessingThreadBlocksQueue(EndTaskEvent readEndEvent, int countLimit)
+            : base(
+                readEndEvent,
+                countLimit,
+                Queue.Synchronized(new Queue(countLimit)), 
+                true
+            )
         {
-            _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.Set();
-        }
-
-        public ProcessingThreadBlocksQueue(EndTaskEvent readEndEvent, int countLimit, LimiterReadingThreadByOperMemory limiterReadingThreadByOperMemory)
-            : base(readEndEvent, countLimit, Queue.Synchronized(new Queue(countLimit)))
-        {
-            if (limiterReadingThreadByOperMemory == null)
-                throw new ArgumentNullException("limiterReadingThreadByOperMemory");
-
-            _limiterReadingThreadByOperMemory = limiterReadingThreadByOperMemory;
             _synchronizedQueue = _collection as Queue;
         }
     }

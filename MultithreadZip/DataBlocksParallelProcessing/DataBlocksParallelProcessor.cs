@@ -37,8 +37,6 @@ namespace ZipVeeamTest
 
         private BlockWriterAbstract _blocksWriter;
 
-        private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory = new LimiterReadingThreadByOperMemory();
-
         private string _sourcePath;
 
         private string _destinationPath;
@@ -169,11 +167,11 @@ namespace ZipVeeamTest
 
             for (int i = 0; i < ProcessorsCount; ++i)
             {
-                _processingThreadDataQueueList.Add(new ProcessingThreadBlocksQueue(_readEndEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory));
+                _processingThreadDataQueueList.Add(new ProcessingThreadBlocksQueue(_readEndEvent, dataBlockCollectionsSize));
                 _processThreadsList.Add(new Thread(ProcessDataBlocksQueue));
             }
 
-            _blocksPreparedToWrite = new ProcessedBlocksQueue(_endProcessingEvent, dataBlockCollectionsSize, _limiterReadingThreadByOperMemory);
+            _blocksPreparedToWrite = new ProcessedBlocksQueue(_endProcessingEvent, dataBlockCollectionsSize);
         }
     }
 }

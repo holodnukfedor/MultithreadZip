@@ -3,11 +3,9 @@ using System.Collections;
 
 namespace ZipVeeamTest
 {
-    public class ProcessedBlocksQueue : SizeLimitedPriorityQueue<byte []>
+    public class ProcessedBlocksQueue : DataBlockPriorityQueueAbstract<byte []>
     {
         private Hashtable _processedBlocksTable;
-
-        private LimiterReadingThreadByOperMemory _limiterReadingThreadByOperMemory;
 
         private int _awaitedKey;
 
@@ -16,20 +14,6 @@ namespace ZipVeeamTest
         protected override bool EndOfWaitingForAddition()
         {
             return _processedBlocksTable.ContainsKey(_awaitedKey);
-        }
-
-        protected override void AwakeAddingThread()
-        {
-            if (_processedBlocksTable.Count == 0)
-            {
-                _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed = false;
-                _limiterReadingThreadByOperMemory.CanReadByOperatMemoryLimitsEvent.Set();
-            }
-        }
-
-        protected override void BeforeEnqueue()
-        {
-            _limiterReadingThreadByOperMemory.ProcessedBlocksCollectionSizeLimitExceed = true;
         }
 
         protected override void AddToCollection(DataBlock dataBlock)
@@ -53,12 +37,13 @@ namespace ZipVeeamTest
             return buffer;
         }
 
-        public ProcessedBlocksQueue(EndTaskEvent processingEndEvent, int countLimit, LimiterReadingThreadByOperMemory limiterReadingThreadByOperMemory) : base(processingEndEvent, countLimit, Hashtable.Synchronized(new Hashtable(countLimit)))
+        public ProcessedBlocksQueue(EndTaskEvent processingEndEvent, int countLimit) : base(
+            processingEndEvent,
+            countLimit,
+            Hashtable.Synchronized(new Hashtable(countLimit)),
+            false
+            )
         {
-            if (limiterReadingThreadByOperMemory == null)
-                throw new ArgumentNullException("limiterReadingThreadByOperMemory");
-
-            _limiterReadingThreadByOperMemory = limiterReadingThreadByOperMemory;
             _processedBlocksTable = _collection as Hashtable;
             _awaitedKey = 1;
         }

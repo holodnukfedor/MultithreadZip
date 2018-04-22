@@ -4,11 +4,17 @@ using System.Threading;
 
 namespace ZipVeeamTest
 {
-    public abstract class SizeLimitedPriorityQueue<TGetType> where TGetType : class
+    public abstract class DataBlockPriorityQueueAbstract<TGetType> where TGetType : class
     {
+        private static object _limitReadByCollectionSizeLocker = new object();
+
+        private static bool _processedBlockSizeLimitExceed = false;
+
         private const int _waitCount = 4000;
 
         private readonly int _countLimit;
+
+        private readonly bool _isProcessingDataBlocksQueue;
 
         private Object _collectionChangedLocker = new Object();
 
@@ -40,7 +46,24 @@ namespace ZipVeeamTest
 
         protected abstract bool EndOfWaitingForAddition();
 
-        protected abstract void BeforeEnqueue();
+        protected void CheckSizeLimitExceed()
+        {
+            lock (_limitReadByCollectionSizeLocker)
+            {
+                if (_isProcessingDataBlocksQueue)
+                {
+                    while (IsMaxSizeExceeded() || _processedBlockSizeLimitExceed)
+                    {
+                        Monitor.Wait(_limitReadByCollectionSizeLocker);
+                    }
+                }
+                else
+                {
+                    if (IsMaxSizeExceeded())
+                        _processedBlockSizeLimitExceed = true;
+                }
+            }
+        }
 
         protected abstract void AddToCollection(DataBlock dataBlock);
 
@@ -48,9 +71,19 @@ namespace ZipVeeamTest
 
         protected abstract bool NeedAwakeWaitingsForAdding();
 
-        protected virtual void AwakeAddingThread()
+        protected void AwakeAddingThread()
         {
+            lock (_limitReadByCollectionSizeLocker)
+            {
+                if (!_isProcessingDataBlocksQueue &&
+                    _collection.Count == 0 &&
+                    _processedBlockSizeLimitExceed)
+                {
+                    _processedBlockSizeLimitExceed = false;
+                }
 
+                Monitor.Pulse(_limitReadByCollectionSizeLocker);
+            }
         }
 
         public int Count
@@ -65,11 +98,14 @@ namespace ZipVeeamTest
 
         public void Enqueue(DataBlock dataBlock)
         {
-            BeforeEnqueue();
+            CheckSizeLimitExceed();
 
             lock (_collectionChangedLocker)
             {
-                AddToCollection(dataBlock);
+                lock (_limitReadByCollectionSizeLocker)
+                {
+                    AddToCollection(dataBlock);
+                }
 
                 if (NeedAwakeWaitingsForAdding())
                     _itemAddedEvent.Set();
@@ -90,7 +126,11 @@ namespace ZipVeeamTest
 
                 lock (_collectionChangedLocker)
                 {
-                    result = DequeueFromCollection();
+                    lock (_limitReadByCollectionSizeLocker)
+                    {
+                        result = DequeueFromCollection();
+                    }
+
                     _itemAddedEvent.Reset();
                 }
 
@@ -100,7 +140,12 @@ namespace ZipVeeamTest
             return null;
         }
 
-        public SizeLimitedPriorityQueue(EndTaskEvent addToCollectionEndEvent, int countLimit, ICollection collection)
+        public DataBlockPriorityQueueAbstract(
+            EndTaskEvent addToCollectionEndEvent,
+            int countLimit, 
+            ICollection collection,
+            bool isProcessingDataBlocksQueue
+            )
         {
             if (addToCollectionEndEvent == null)
                 throw new ArgumentException("readEndEvent");
@@ -111,6 +156,7 @@ namespace ZipVeeamTest
             if (collection == null)
                 throw new ArgumentException("Коллекция не должна быть равна null");
 
+            _isProcessingDataBlocksQueue = isProcessingDataBlocksQueue;
             _countLimit = countLimit;
             _addToCollectionEndEvent = addToCollectionEndEvent;
             _collection = collection;
